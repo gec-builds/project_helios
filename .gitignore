@@ -1,11 +1,9 @@
 # Miscellaneous
 *.class
-*.log
 *.pyc
 *.swp
 .DS_Store
 .atom/
-.build/
 .buildlog/
 .history
 .svn/
@@ -46,7 +44,6 @@ app.*.map.json
 
 # Flutter/Dart
 .dart_tool/
-.build/
 .packages
 .idea/
 *.iml
