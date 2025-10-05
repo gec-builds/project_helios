@@ -1,20 +1,23 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../models/planet_data.dart';
 
 class SolarSystemProvider extends ChangeNotifier {
-  Planet? selectedPlanet;
-  bool flareActive = false;
+  Planet? _selectedPlanet;
+  bool _flareActive = false;
 
-  void selectPlanet(Planet? planet) {
-    selectedPlanet = planet;
+  Planet? get selectedPlanet => _selectedPlanet;
+  bool get flareActive => _flareActive;
+
+  void selectPlanet(Planet? p) {
+    _selectedPlanet = p;
     notifyListeners();
   }
 
   void triggerFlare() {
-    flareActive = true;
+    _flareActive = true;
     notifyListeners();
-    Future.delayed(const Duration(seconds: 6), () {
-      flareActive = false;
+    Future.delayed(const Duration(seconds: 2), () {
+      _flareActive = false;
       notifyListeners();
     });
   }

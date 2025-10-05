@@ -1,11 +1,13 @@
+// lib/widgets/planet_widget.dart
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../models/planet_data.dart';
 
 class PlanetWidget extends StatelessWidget {
   final Planet planet;
-  final double rotation;
+  final double rotation; // angle used for orbit position (not used for layout here)
   final double zoom;
+  final double sceneRotation; // small scene tilt input for parallax
   final VoidCallback onTap;
 
   const PlanetWidget({
@@ -13,39 +15,66 @@ class PlanetWidget extends StatelessWidget {
     required this.planet,
     required this.rotation,
     required this.zoom,
+    required this.sceneRotation,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    double centerX = MediaQuery.of(context).size.width / 2;
-    double centerY = MediaQuery.of(context).size.height / 2;
+    // small tilt derived from sceneRotation (kept tiny so it feels natural)
+    final double tilt = (sceneRotation * 0.05).clamp(-0.3, 0.3);
 
-    double distance = planet.positionFromSun * 60.0 * zoom;
-    double angle = rotation;
+    final Matrix4 matrix = Matrix4.identity()
+      ..setEntry(3, 2, 0.001) // perspective
+      ..rotateX(tilt)
+      ..rotateY(-tilt / 2);
 
-    double x = centerX + distance * cos(angle) - planet.radius;
-    double y = centerY + distance * sin(angle) - planet.radius;
+    final double size = planet.radius * 2 * zoom;
+    final double inner = planet.radius * 1.1 * zoom;
 
-    return Positioned(
-      left: x,
-      top: y,
+    return Transform(
+      transform: matrix,
+      alignment: Alignment.center,
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          width: planet.radius * 2,
-          height: planet.radius * 2,
+          duration: const Duration(milliseconds: 260),
+          width: size,
+          height: size,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: planet.color,
+            gradient: RadialGradient(
+              center: const Alignment(-0.2, -0.2),
+              radius: 0.9,
+              colors: [
+                planet.color.withOpacity(0.98),
+                planet.color.withOpacity(0.75),
+              ],
+            ),
             boxShadow: [
               BoxShadow(
-                color: planet.color.withOpacity(0.6),
-                blurRadius: 10,
-                spreadRadius: 2,
+                color: planet.color.withOpacity(0.34),
+                blurRadius: 12 * zoom,
+                spreadRadius: 1,
+              ),
+              BoxShadow(
+                color: Colors.black.withOpacity(0.45),
+                blurRadius: 8 * zoom,
+                offset: Offset(0, 4 * zoom),
               ),
             ],
+          ),
+          child: Center(
+            // small inner sheen to give a 3D look
+            child: Container(
+              width: inner,
+              height: inner,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.02),
+              ),
+            ),
           ),
         ),
       ),
